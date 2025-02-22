@@ -18,12 +18,12 @@ interface DetectedObject {
 
 interface VideoFeedProps {
   onNewFrame?: (imageDescription: string, imageData: string) => void;
+  detectedObjects?: DetectedObject[];
 }
 
-const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
+const VideoFeed = ({ onNewFrame, detectedObjects = [] }: VideoFeedProps) => {
   const imageRef = useRef<HTMLImageElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
-  const [detectedObjects, setDetectedObjects] = useState<DetectedObject[]>([]);
   const lastCaptureTime = useRef<number>(0);
   const isProcessing = useRef<boolean>(false);
   const { toast } = useToast();
@@ -116,7 +116,7 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
           className="w-full h-full object-contain"
           alt="Live Feed"
         />
-        {detectedObjects.map((obj, index) => (
+        {detectedObjects?.map((obj, index) => (
           <div
             key={index}
             className="absolute border-2 border-yellow-400 bg-yellow-400/10"

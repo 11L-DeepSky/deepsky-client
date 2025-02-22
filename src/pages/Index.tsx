@@ -36,7 +36,13 @@ const Index = () => {
     <div className="min-h-screen bg-dashboard-bg text-white p-4">
       <div className="grid grid-cols-2 gap-4 max-w-[1800px] mx-auto" style={{ height: "calc(100vh - 2rem)" }}>
         <DashboardSection title="Current View" className="h-[calc(50vh-2rem)]">
-          <VideoFeed onNewFrame={handleNewFrame} />
+          <VideoFeed 
+            onNewFrame={handleNewFrame} 
+            detectedObjects={detectedObjects.map(dot => ({
+              type: dot.type,
+              boundingBox: dot.boundingBox
+            }))}
+          />
         </DashboardSection>
         
         <DashboardSection title="Message Feed" className="h-[calc(50vh-2rem)]">
