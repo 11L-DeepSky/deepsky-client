@@ -4,7 +4,7 @@ import DashboardSection from '@/components/DashboardSection';
 import VideoFeed from '@/components/VideoFeed';
 import RadarView from '@/components/RadarView';
 import MessageFeed from '@/components/MessageFeed';
-import TikTokFeed from '@/components/TikTokFeed';
+import LiveFeed from '@/components/LiveFeed';
 
 interface RadarDot {
   x: number;
@@ -26,7 +26,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-dashboard-bg text-white p-4">
       <div className="grid grid-cols-2 gap-4 max-w-[1800px] mx-auto" style={{ height: "calc(100vh - 2rem)" }}>
-        <DashboardSection title="Current View" className="h-[calc(50vh-2rem)]">
+        <DashboardSection title="Last Analyzed Frame" className="h-[calc(50vh-2rem)]">
           <VideoFeed onNewFrame={handleNewFrame} />
         </DashboardSection>
         
@@ -41,8 +41,8 @@ const Index = () => {
           <RadarView dots={radarDots} />
         </DashboardSection>
         
-        <DashboardSection title="Entertainment" className="h-[calc(50vh-2rem)]">
-          <TikTokFeed />
+        <DashboardSection title="Live Feed" className="h-[calc(50vh-2rem)]">
+          <LiveFeed />
         </DashboardSection>
       </div>
     </div>
