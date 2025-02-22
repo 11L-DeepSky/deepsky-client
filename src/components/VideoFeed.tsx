@@ -10,17 +10,17 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
   const images = [
-    'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7',
-    'https://images.unsplash.com/photo-1460925895917-afdab827c52f',
-    'https://images.unsplash.com/photo-1485827404703-89b55fcc595e',
-    'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158',
-    'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7'
+    '/lovable-uploads/ca63b729-1c25-4336-8add-fd87242f2135.png',
+    '/lovable-uploads/77cc8515-d8e1-4863-8abb-14cc1a0df0f0.png',
+    '/lovable-uploads/9f47fd5d-8251-4e7b-b022-bf6a54fb92cc.png',
+    '/lovable-uploads/74510882-619c-4748-bd05-78ea8c094f2b.png',
+    '/lovable-uploads/4178e792-b2cc-498c-ac35-f55e2a44585a.png'
   ];
 
   useEffect(() => {
     // Send initial frame
     if (onNewFrame) {
-      const imageDescription = `View from an aircraft showing a military aircraft in flight at high altitude. The image shows image number 1 in the sequence.`;
+      const imageDescription = `View from the cockpit of a small aircraft. Analyzing forward view for any potential aircraft or obstacles.`;
       onNewFrame(imageDescription);
     }
 
@@ -30,7 +30,7 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
         const nextIndex = (prev + 1) % images.length;
         // When image changes, send the new frame for analysis
         if (onNewFrame) {
-          const imageDescription = `View from an aircraft showing a military aircraft in flight at high altitude. The image shows image number ${nextIndex + 1} in the sequence.`;
+          const imageDescription = `View from the cockpit of a small aircraft. Analyzing forward view for any potential aircraft or obstacles. Frame ${nextIndex + 1} of sequence.`;
           onNewFrame(imageDescription);
         }
         return nextIndex;
