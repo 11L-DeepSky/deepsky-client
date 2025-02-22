@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import DashboardSection from '@/components/DashboardSection';
 import VideoFeed from '@/components/VideoFeed';
 import RadarView from '@/components/RadarView';
