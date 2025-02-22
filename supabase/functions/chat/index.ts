@@ -2,7 +2,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const SYSTEM_PROMPT = `You are a spotter for a small airplane pilot. You will receive short video feeds from the forward view of the aircraft. Your job is to spot other aircraft and objects that if unnoticed may cause danger for the pilot. Focus only on what's visible in the forward 180-degree arc in front of the aircraft.
+const SYSTEM_PROMPT = `You are a spotter for a small airplane pilot. You will receive short video feeds from the forward view of the aircraft. Your job is to spot other aircraft and objects that if unnoticed may cause danger for the pilot. Focus only on what's visible in the forward 180-degree arc in front of the aircraft. Carefully analyze each image that is provided.
 
 Respond with only JSON, as your output will be parsed by an external application. The json structure is:
 
@@ -31,7 +31,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message } = await req.json();
+    const { message, imageUrl } = await req.json();
 
     // Get AI response from OpenAI
     const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -44,7 +44,13 @@ serve(async (req) => {
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: message }
+          { 
+            role: 'user', 
+            content: [
+              { type: "text", text: message },
+              { type: "image_url", image_url: imageUrl }
+            ]
+          }
         ],
       }),
     });

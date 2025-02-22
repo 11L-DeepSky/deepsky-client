@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 
 interface VideoFeedProps {
-  onNewFrame?: (imageDescription: string) => void;
+  onNewFrame?: (imageDescription: string, imageUrl: string) => void;
 }
 
 const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
@@ -27,7 +27,7 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     // Send initial frame description
     if (onNewFrame) {
       const imageDescription = `View from the cockpit of a small aircraft. Analyzing forward view for any potential aircraft or obstacles.`;
-      onNewFrame(imageDescription);
+      onNewFrame(imageDescription, images[currentImageIndex]);
     }
 
     // Set up the image rotation interval
@@ -36,7 +36,7 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
         const nextIndex = (prev + 1) % images.length;
         if (onNewFrame) {
           const imageDescription = `View from the cockpit of a small aircraft. Analyzing forward view for any potential aircraft or obstacles. Frame ${nextIndex + 1} of sequence.`;
-          onNewFrame(imageDescription);
+          onNewFrame(imageDescription, images[nextIndex]);
         }
         return nextIndex;
       });

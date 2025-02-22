@@ -27,10 +27,10 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const fetchResponse = async (userMessage: string) => {
+  const fetchResponse = async (userMessage: string, imageUrl: string) => {
     try {
       const { data, error } = await supabase.functions.invoke('chat', {
-        body: { message: userMessage }
+        body: { message: userMessage, imageUrl }
       });
 
       if (error) throw error;
@@ -46,9 +46,9 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
     }
   };
 
-  const addMessage = async (text: string) => {
+  const addMessage = async (text: string, imageUrl: string) => {
     // Get AI response without showing the input message
-    const response = await fetchResponse(text);
+    const response = await fetchResponse(text, imageUrl);
     if (response) {
       const aiMessage = {
         id: Date.now(),
