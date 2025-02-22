@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
+import { useToast } from "@/hooks/use-toast";
 
 interface VideoFeedProps {
   onNewFrame?: (imageDescription: string, imageData: string) => void;
@@ -10,78 +11,95 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const playerRef = useRef<any>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [lastCaptureTime, setLastCaptureTime] = useState(0);
+  const toast = useToast();
+  const CAPTURE_INTERVAL = 5000; // Capture every 5 seconds
 
-  const captureFrame = () => {
+  const captureFrame = async () => {
     if (!canvasRef.current || !playerRef.current) return;
+
+    // Check if enough time has passed since last capture
+    const currentTime = Date.now();
+    if (currentTime - lastCaptureTime < CAPTURE_INTERVAL) return;
+    setLastCaptureTime(currentTime);
 
     const canvas = canvasRef.current;
     
     // Set canvas size to match video dimensions
-    canvas.width = 640; // Standard YouTube video width
-    canvas.height = 360; // Standard YouTube video height
+    canvas.width = 640;
+    canvas.height = 360;
     
-    // Draw the current frame to canvas
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Get the video ID for logging
-    const videoId = playerRef.current.target.getVideoData().video_id;
-    console.log('Attempting to capture frame from video:', videoId);
-    
     try {
-      // Instead of trying to capture the actual frame, for now we'll send a URL to a thumbnail
-      // This ensures we at least have some image data to process
+      const videoId = playerRef.current.target.getVideoData().video_id;
+      console.log(`Capturing frame at ${new Date().toISOString()}`);
+      
+      // Get high-quality thumbnail for analysis
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hq720.jpg`;
       
-      // Create an image element to load the thumbnail
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        // Draw the image to canvas
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
-        // Convert to base64
-        const base64Image = canvas.toDataURL('image/jpeg', 0.8);
-        console.log('Successfully captured frame, length:', base64Image.length);
+      
+      // Convert the image loading to a Promise
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = thumbnailUrl;
+      });
 
-        // Send frame for analysis
-        if (onNewFrame) {
-          onNewFrame(
-            'Analyzing current frame for potential aircraft or obstacles.',
-            base64Image
-          );
-        }
-      };
+      // Draw the image and get base64 data
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const base64Image = canvas.toDataURL('image/jpeg', 0.8);
       
-      img.onerror = (err) => {
-        console.error('Error loading thumbnail:', err);
-      };
-      
-      img.src = thumbnailUrl;
+      // Send frame for analysis and wait for response
+      if (onNewFrame) {
+        await onNewFrame(
+          'Analyzing current frame for potential aircraft or obstacles.',
+          base64Image
+        );
+        console.log('Frame successfully analyzed');
+      }
     } catch (error) {
-      console.error('Error capturing frame:', error);
+      console.error('Error during frame capture:', error);
+      toast.toast({
+        title: "Frame Capture Error",
+        description: "Failed to capture video frame. Retrying...",
+        variant: "destructive"
+      });
     }
   };
 
   const handlePlayerReady = (event: any) => {
     console.log('YouTube player ready');
     playerRef.current = event;
-    // Capture initial frame after a short delay to ensure video is playing
-    setTimeout(() => {
-      captureFrame();
-      setIsCapturing(true);
-    }, 2000);
+    setIsCapturing(true);
+    
+    // Start capture immediately
+    captureFrame();
   };
 
   useEffect(() => {
-    // When we get isCapturing = true, start the capture loop
     if (isCapturing) {
-      console.log('Starting capture loop');
-      const intervalId = setInterval(() => {
-        captureFrame();
-      }, 30000); // Capture every 30 seconds
+      console.log('Starting continuous capture loop');
+      
+      // Create a continuous capture loop
+      const captureLoop = async () => {
+        await captureFrame();
+        // Schedule next capture immediately
+        if (isCapturing) {
+          requestAnimationFrame(captureLoop);
+        }
+      };
 
-      return () => clearInterval(intervalId);
+      // Start the capture loop
+      captureLoop();
+
+      // Cleanup function
+      return () => {
+        setIsCapturing(false);
+      };
     }
   }, [isCapturing]);
 
@@ -99,7 +117,7 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
               controls: 0,
               modestbranding: 1,
               loop: 1,
-              playlist: 'zMhzoNhSZTA', // Required for looping
+              playlist: 'zMhzoNhSZTA',
             },
           }}
           onReady={handlePlayerReady}
