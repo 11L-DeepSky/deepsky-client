@@ -3,11 +3,19 @@ import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react'
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+interface BoundingBox {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
 interface RadarDot {
   x: number;
   y: number;
   size: number;
   type: 'BIRD' | 'SMALL_PLANE' | 'BIG_PLANE';
+  boundingBox: BoundingBox;
 }
 
 interface Message {
@@ -20,9 +28,10 @@ interface Message {
 
 interface Props {
   onRadarUpdate?: (dots: RadarDot[]) => void;
+  onBoundingBoxesUpdate?: (dots: RadarDot[]) => void;
 }
 
-const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
+const MessageFeed = forwardRef(({ onRadarUpdate, onBoundingBoxesUpdate }: Props, ref) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -64,7 +73,6 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
     console.log('addMessage called with:', { text, imageUrl });
     setIsLoading(true);
     
-    // Get AI response without showing the input message
     const response = await fetchResponse(text, imageUrl);
     setIsLoading(false);
     
@@ -76,14 +84,16 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
         audioUrl: response.audio,
         radarDots: response.radarDots
       };
-      setMessages(prev => [aiMessage, ...prev]); // Add new messages at the beginning
+      setMessages(prev => [aiMessage, ...prev]);
 
-      // Update radar
       if (onRadarUpdate) {
         onRadarUpdate(response.radarDots || []);
       }
 
-      // Only autoplay audio if radar dots are detected
+      if (onBoundingBoxesUpdate) {
+        onBoundingBoxesUpdate(response.radarDots || []);
+      }
+
       if (audioRef.current && response.audio && response.radarDots && response.radarDots.length > 0) {
         audioRef.current.src = response.audio;
         audioRef.current.play().catch(console.error);
@@ -91,7 +101,6 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
     }
   };
 
-  // Expose addMessage method to parent components
   useImperativeHandle(ref, () => ({
     addMessage
   }));
