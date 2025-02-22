@@ -32,21 +32,6 @@ const RadarView = ({ dots = [] }: RadarViewProps) => {
 
   return (
     <div className="relative w-full h-full bg-black/80 rounded-md overflow-hidden">
-      {/* Label legend */}
-      <div className="absolute top-4 right-4 space-y-2 z-10">
-        {Object.entries(labels).map(([type]) => (
-          <div key={type} className="flex items-center justify-end space-x-2">
-            <span className="text-xs text-green-500 font-mono">
-              {type.replace('_', ' ')}
-            </span>
-            <div 
-              className="w-3 h-3 rounded-full" 
-              style={{ backgroundColor: typeColors[type as keyof typeof typeColors] }} 
-            />
-          </div>
-        ))}
-      </div>
-
       {/* Semicircle background with distance rings */}
       <div className="absolute inset-0">
         <svg width="100%" height="100%" viewBox="0 0 100 50" preserveAspectRatio="none">
