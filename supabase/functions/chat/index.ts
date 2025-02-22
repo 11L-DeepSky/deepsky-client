@@ -31,7 +31,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, imageUrl } = await req.json();
+    const { message, imageBase64 } = await req.json();
 
     // Get AI response from OpenAI
     const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -48,7 +48,10 @@ serve(async (req) => {
             role: 'user', 
             content: [
               { type: "text", text: message },
-              { type: "image_url", image_url: imageUrl }
+              { type: "image_url", image_url: {
+                url: `data:image/png;base64,${imageBase64}`,
+                detail: "high"
+              }}
             ]
           }
         ],
