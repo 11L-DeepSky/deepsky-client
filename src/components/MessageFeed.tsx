@@ -30,30 +30,27 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
 
   const fetchResponse = async (userMessage: string, imageUrl: string) => {
     try {
+      console.log('Sending request with imageUrl:', imageUrl);
+      
       const { data, error } = await supabase.functions.invoke('chat', {
-        body: {
-          message: userMessage,
-          imageUrl: imageUrl
+        body: { 
+          message: userMessage, 
+          imageUrl: imageUrl 
         }
       });
 
       if (error) {
         console.error('Supabase function error:', error);
-        throw error;
+        return null;
       }
 
       if (!data) {
-        throw new Error('No data received from function');
+        return null;
       }
 
       return data;
     } catch (error) {
       console.error('Error:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to get AI response",
-      });
       return null;
     }
   };
@@ -61,11 +58,11 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
   const addMessage = async (text: string, imageUrl: string) => {
     console.log('addMessage called with:', { text, imageUrl });
     setIsLoading(true);
-
+    
     // Get AI response without showing the input message
     const response = await fetchResponse(text, imageUrl);
     setIsLoading(false);
-
+    
     if (response) {
       const aiMessage = {
         id: Date.now(),
@@ -97,7 +94,7 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
   return (
     <div className="space-y-2 h-full overflow-auto">
       <audio ref={audioRef} className="hidden" />
-
+      
       {isLoading && (
         <div className="bg-black/20 p-3 rounded-md backdrop-blur-sm animate-pulse">
           <div className="flex justify-between items-start">
