@@ -26,16 +26,10 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     isProcessing.current = true;
     
     try {
-      // Fetch the image from the endpoint
-      const response = await fetch('https://via.assets.so/img.jpg?w=400&h=150&tc=blue&bg=#cecece&t=TEST IMAGE');
-      const blob = await response.blob();
-      
-      // Convert blob to base64
-      const base64Image = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(blob);
-      });
+      // Fetch the frame from the new endpoint
+      const response = await fetch('https://cd2af9606eaed8f7f92d2baab92cde2e.loophole.site/frame');
+      const data = await response.json();
+      const base64Image = data.frame; // The endpoint already provides base64 encoded image
 
       // Update the displayed image
       if (imageRef.current) {
@@ -109,7 +103,7 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
           ref={imageRef}
           className="w-full h-full object-contain"
           alt="Live Feed"
-          src="https://via.assets.so/img.jpg?w=400&h=150&tc=blue&bg=#cecece&t=TEST IMAGE"
+          src="data:image/jpeg;base64,R0EAHAAAAeAAAIDACjEIyXNhEQjJW/EAAAEAARf/+IAAAAEB+nAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEBZwAAAQz6cBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEBHAQAdCAEBZwAAARf6cBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQFnAAABIvpwEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBAWcAAAEt+nAQAgBACAEAIAQAgBACAEcBAB5ACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBAWcAAAE4+nAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIBjgAAAAUL6cBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACARwEAHxACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEBZwAAAU36cBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQFnAAABWPpwEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAJHAQAwDwD//////////////////wBACAEBZwAAAWP6cBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQFnAAABbvpwEAIAQAgBACAEAIRbAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBACAEAIAQAgBAjgA=="
         />
       </div>
       <div className="absolute top-4 right-4 z-10">
