@@ -15,11 +15,11 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     if (!canvasRef.current || !playerRef.current) return;
 
     const canvas = canvasRef.current;
-    const video = playerRef.current.getInternalPlayer();
+    const video = playerRef.current.target.getIframe();
     
     // Set canvas size to match video dimensions
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    canvas.width = video.clientWidth;
+    canvas.height = video.clientHeight;
     
     // Draw the current frame to canvas
     const ctx = canvas.getContext('2d');
@@ -40,7 +40,7 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
   };
 
   const handlePlayerReady = (event: any) => {
-    playerRef.current = event.target;
+    playerRef.current = event;
     // Capture initial frame after a short delay to ensure video is playing
     setTimeout(() => {
       captureFrame();
