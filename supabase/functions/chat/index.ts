@@ -2,23 +2,26 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const SYSTEM_PROMPT = `You are a spotter for a small airplane pilot. You will receive short video feeds from the forward view of the aircraft. Your job is to spot other aircraft and objects that if unnoticed may cause danger for the pilot. Focus only on what's visible in the forward 180-degree arc in front of the aircraft. Carefully analyze each image that is provided.
+const SYSTEM_PROMPT = `You are a spotter for a small airplane pilot. You will receive short video feeds from the forward view of the aircraft. Your job is to spot other aircraft and objects that could pose a potential threat. You must provide both textual analysis and radar positioning data.
 
-Respond with only JSON, as your output will be parsed by an external application. The json structure is:
+For each object you detect, you should provide:
+1. Distance (0-100, where 100 is the horizon)
+2. Angle (-90 to +90 degrees, where 0 is straight ahead, -90 is far left, +90 is far right)
 
+Respond with ONLY JSON in this exact format:
 {
-  "message": "<MESSAGE FOR THE PILOT>",
+  "message": "<clear, concise message about what you see>",
   "radarDots": [
     {
-      "x": <number 0-100 representing position from left to right>,
-      "y": <number 0-50 representing position from top to middle, since we only show forward view>,
+      "distance": <number 0-100>,
+      "angle": <number -90 to +90>,
       "size": <number 5-20>,
-      "type": <enum, supported types are "BIRD", "SMALL_PLANE", "BIG_PLANE">
+      "type": <"BIRD" | "SMALL_PLANE" | "BIG_PLANE">
     }
   ]
 }
 
-Only return dots for objects that are visible in the forward view of the aircraft. Y values must be between 0-50 since we only show the forward 180-degree arc.`;
+Be as accurate as possible with distance and angle estimations based on the visual information.`;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,11 +36,18 @@ serve(async (req) => {
   try {
     const { message, imageBase64 } = await req.json();
 
+    const openaiKey = Deno.env.get('OPENAI_API_KEY');
+    const elevenLabsKey = Deno.env.get('ELEVEN_LABS_API_KEY');
+
+    if (!openaiKey || !elevenLabsKey) {
+      throw new Error('Required API keys not found');
+    }
+
     // Get AI response from OpenAI
     const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${openaiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -59,18 +69,34 @@ serve(async (req) => {
     });
 
     if (!openaiResponse.ok) {
+      const errorData = await openaiResponse.json();
+      console.error('OpenAI API error:', errorData);
       throw new Error('OpenAI API error');
     }
 
     const openaiData = await openaiResponse.json();
-    const aiResponse = JSON.parse(openaiData.choices[0].message.content);
+    let aiResponse;
+    try {
+      aiResponse = JSON.parse(openaiData.choices[0].message.content);
+    } catch (error) {
+      console.error('Failed to parse OpenAI response:', error);
+      throw new Error('Invalid response format from OpenAI');
+    }
+
+    // Convert radar coordinates from angle/distance to x/y coordinates
+    const processedRadarDots = (aiResponse.radarDots || []).map(dot => ({
+      x: 50 + (Math.sin(dot.angle * Math.PI / 180) * dot.distance / 2),
+      y: 50 - (Math.cos(dot.angle * Math.PI / 180) * dot.distance / 2),
+      size: dot.size,
+      type: dot.type
+    }));
 
     // Generate voice with ElevenLabs
     const voiceResponse = await fetch('https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM', {
       method: 'POST',
       headers: {
         'Accept': 'audio/mpeg',
-        'xi-api-key': Deno.env.get('ELEVEN_LABS_API_KEY') || '',
+        'xi-api-key': elevenLabsKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -84,6 +110,7 @@ serve(async (req) => {
     });
 
     if (!voiceResponse.ok) {
+      console.error('ElevenLabs API error:', await voiceResponse.text());
       throw new Error('ElevenLabs API error');
     }
 
@@ -95,16 +122,19 @@ serve(async (req) => {
       JSON.stringify({
         text: aiResponse.message,
         audio: `data:audio/mpeg;base64,${audioBase64}`,
-        radarDots: aiResponse.radarDots || []
+        radarDots: processedRadarDots
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in chat function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack 
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

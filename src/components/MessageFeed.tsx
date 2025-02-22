@@ -33,14 +33,22 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
         body: { message: userMessage, imageBase64 }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('No data received from function');
+      }
+
       return data;
     } catch (error) {
       console.error('Error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to get AI response",
+        description: error.message || "Failed to get AI response",
       });
       return null;
     }
