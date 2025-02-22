@@ -3,16 +3,16 @@ import React, { useState, useEffect } from 'react';
 
 const VideoFeed = () => {
   const [imageUrl, setImageUrl] = useState<string>('');
+  const [counter, setCounter] = useState<number>(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // Generate a random number to prevent caching
-      const timestamp = new Date().getTime();
-      setImageUrl(`https://via.assets.so/img.jpg?w=400&h=150&tc=blue&bg=#cecece&t=${timestamp}`);
+      setCounter(prev => prev + 1);
+      setImageUrl(`https://via.assets.so/img.jpg?w=400&h=150&tc=blue&bg=#cecece&t=${counter}`);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [counter]);
 
   return (
     <div className="relative w-full h-full bg-black/20 rounded-md overflow-hidden">
