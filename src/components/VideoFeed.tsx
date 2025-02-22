@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Play, Pause } from "lucide-react";
 
 interface VideoFeedProps {
-  onNewFrame?: (imageDescription: string, imageData: string) => void;
+  onNewFrame?: (imageDescription: string, imageData: string) => Promise<void>;
 }
 
 const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
@@ -24,6 +24,7 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     }
 
     isProcessing.current = true;
+    let currentImageUrl: string | null = null;
     
     try {
       // Fetch the frame from the endpoint
@@ -33,27 +34,27 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
       // The endpoint already provides base64 encoded image
       if (data && data.frame) {
         // Ensure the image data starts with proper data URL prefix if not present
-        const imageUrl = data.frame.startsWith('data:') 
+        currentImageUrl = data.frame.startsWith('data:') 
           ? data.frame 
           : `data:image/jpeg;base64,${data.frame}`;
 
-        // Update the displayed image
-        if (imageRef.current) {
-          imageRef.current.src = imageUrl;
-        }
-
-        // Send frame for analysis
+        // Send frame for analysis before updating the image
         if (onNewFrame) {
           try {
             await onNewFrame(
               'Analyzing current frame for potential aircraft or obstacles.',
-              imageUrl
+              currentImageUrl
             );
             console.log('Frame successfully analyzed');
+            
+            // Only update the image after Supabase has processed it
+            if (imageRef.current && currentImageUrl) {
+              imageRef.current.src = currentImageUrl;
+            }
+            
             lastCaptureTime.current = Date.now();
           } catch (error) {
             console.error('Error from Supabase analysis:', error);
-            // Don't throw here - we want to continue the loop even if analysis fails
           }
         }
       }
