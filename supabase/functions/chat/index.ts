@@ -1,34 +1,26 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const SYSTEM_PROMPT = `You are a spotter for a small airplane pilot. You will receive short video feeds from the forward view of the aircraft. Your job is to spot other aircraft and objects that could pose a potential threat. You must provide textual analysis, radar positioning data, and bounding box coordinates for detected objects.
+const SYSTEM_PROMPT = `You are a spotter for a small airplane pilot. You will receive an image from the forward view of the aircraft. Your job is to spot other aircraft and objects that could pose a potential threat. You must provide both textual analysis and radar positioning data.
 
-For each object you detect, provide:
+For each object you detect, you should provide:
 1. Distance (0-100, where 100 is the horizon)
 2. Angle (-90 to 90 degrees, where 0 is straight ahead, negative values for left, positive values for right)
-3. Bounding box coordinates (x1, y1, x2, y2 in percentage of image dimensions, where 0,0 is top-left and 100,100 is bottom-right)
 
-IMPORTANT: Respond with raw JSON only. Do not include markdown formatting, code blocks, or any other text. Your entire response must be valid JSON in this exact format:
+Respond with ONLY JSON in this exact format:
 {
-  "message": "<clear, concise message about what you see>",
+  "message": "<clear, concise message about what you see. Focus on the number of objects, to be consistent with the radar dots.>",
   "radarDots": [
     {
       "distance": <number 0-100>,
       "angle": <number -90 to 90>,
       "size": <number 5-20>,
-      "type": <"BIRD" | "SMALL_PLANE" | "BIG_PLANE">,
-      "boundingBox": {
-        "x1": <number 0-100>,
-        "y1": <number 0-100>,
-        "x2": <number 0-100>,
-        "y2": <number 0-100>
-      }
+      "type": <"BIRD" | "SMALL_PLANE" | "BIG_PLANE">
     }
   ]
 }
 
-Be as accurate as possible with all measurements based on the visual information. Never include + sign for positive numbers. Bounding boxes should tightly contain the detected objects.`;
+Be as accurate as possible with distance and angle estimations based on the visual information. Never include + sign for positive numbers.`;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -98,17 +90,10 @@ serve(async (req) => {
 
     const openaiData = await chatResponse.json();
     console.log('OpenAI response received');
-    console.log('Raw response:', openaiData.choices[0].message.content);
 
     let aiResponse;
     try {
-      // Clean the response by removing any markdown formatting
-      const cleanedResponse = openaiData.choices[0].message.content
-        .replace(/```json\n?/, '')  // Remove opening ```json
-        .replace(/```\n?$/, '')     // Remove closing ```
-        .trim();                    // Remove any extra whitespace
-      
-      aiResponse = JSON.parse(cleanedResponse);
+      aiResponse = JSON.parse(openaiData.choices[0].message.content);
     } catch (error) {
       console.error('Failed to parse OpenAI response:', error);
       console.error('Raw response:', openaiData.choices[0].message.content);
@@ -120,8 +105,7 @@ serve(async (req) => {
       x: 50 + (Math.sin(dot.angle * Math.PI / 180) * dot.distance / 2),
       y: 50 - (Math.cos(dot.angle * Math.PI / 180) * dot.distance / 2),
       size: dot.size,
-      type: dot.type,
-      boundingBox: dot.boundingBox
+      type: dot.type
     }));
 
     // Generate voice with ElevenLabs using the specified voice ID
@@ -134,7 +118,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         text: aiResponse.message || "No threats detected",
-        model_id: "eleven_flash_v2_5",
+        model_id: "eleven_flash_v2_5",  // Updated to use the correct model
         voice_settings: {
           stability: 0.5,
           similarity_boost: 0.5
