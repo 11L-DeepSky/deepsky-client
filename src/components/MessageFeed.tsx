@@ -81,8 +81,8 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
         onRadarUpdate(response.radarDots || []);
       }
 
-      // Only autoplay audio if radar dots are detected
-      if (audioRef.current && response.audio && response.radarDots && response.radarDots.length > 0) {
+      // Always play audio if available
+      if (audioRef.current && response.audio) {
         audioRef.current.src = response.audio;
         audioRef.current.play().catch(console.error);
       }
