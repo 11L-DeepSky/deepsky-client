@@ -5,7 +5,7 @@ const LiveFeed = () => {
   return (
     <div className="relative w-full h-full bg-black/20 rounded-md overflow-hidden">
       <iframe
-        src="https://player.twitch.tv/?channel=izakooo&parent=preview--aviatron-sense.lovable.app&autoplay=true"
+        src="https://player.twitch.tv/?channel=0xmmbd&parent=preview--aviatron-sense.lovable.app&autoplay=true"
         height="100%"
         width="100%"
         allowFullScreen
