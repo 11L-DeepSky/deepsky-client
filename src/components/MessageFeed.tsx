@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -22,7 +22,7 @@ interface Props {
   onRadarUpdate?: (dots: RadarDot[]) => void;
 }
 
-const MessageFeed = ({ onRadarUpdate }: Props) => {
+const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -80,6 +80,11 @@ const MessageFeed = ({ onRadarUpdate }: Props) => {
     }
   };
 
+  // Expose addMessage method to parent components
+  useImperativeHandle(ref, () => ({
+    addMessage
+  }));
+
   useEffect(() => {
     // Initial system message
     addMessage("Systems initialized");
@@ -114,6 +119,8 @@ const MessageFeed = ({ onRadarUpdate }: Props) => {
       ))}
     </div>
   );
-};
+});
+
+MessageFeed.displayName = 'MessageFeed';
 
 export default MessageFeed;
