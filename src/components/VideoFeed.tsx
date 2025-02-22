@@ -8,13 +8,13 @@ interface VideoFeedProps {
 const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
-  // Updated image paths with the new uploads
+  // Updated image URLs from ibb.co
   const images = [
-    '/lovable-uploads/1a71c9c0-6e9e-4052-a65f-3e2c80669fe3.png',
-    '/lovable-uploads/f399dd6a-801b-43b4-8fd1-566849f7baca.png',
-    '/lovable-uploads/974d7639-934d-448d-8854-babe9f8e0468.png',
-    '/lovable-uploads/50d82fb5-ad0e-496f-bc3d-33cad599f167.png',
-    '/lovable-uploads/ace6539d-0fad-4aaf-9345-c2e50585479a.png'
+    'https://i.ibb.co/8gyFbKYd/hq720.png',
+    'https://i.ibb.co/gZRYmpw8/800x450-q95.png',
+    'https://i.ibb.co/XZ14k561/129936813-p0frbscf.png',
+    'https://i.ibb.co/hF0DxFGP/110302-F-TY646-073.png',
+    'https://i.ibb.co/zVKt8zC1/GSD3b7-PW4-AAQjm-D.png'
   ];
 
   useEffect(() => {
@@ -49,7 +49,7 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     <div className="relative w-full h-full bg-black/20 rounded-md overflow-hidden">
       <div className="absolute inset-0 flex items-center justify-center">
         <img
-          key={images[currentImageIndex]} // Add key to force re-render on image change
+          key={images[currentImageIndex]}
           src={images[currentImageIndex]}
           alt={`Aircraft view frame ${currentImageIndex + 1}`}
           className="w-full h-full object-contain"
