@@ -1,6 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   id: number;
@@ -12,21 +13,16 @@ interface Message {
 const MessageFeed = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const { toast } = useToast();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const fetchResponse = async (userMessage: string) => {
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message: userMessage }),
+      const { data, error } = await supabase.functions.invoke('chat', {
+        body: { message: userMessage }
       });
 
-      if (!response.ok) throw new Error('Failed to get AI response');
-
-      const data = await response.json();
-      return data.text;
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -48,14 +44,21 @@ const MessageFeed = () => {
     setMessages(prev => [...prev, newMessage]);
 
     // Get AI response
-    const aiResponse = await fetchResponse(text);
-    if (aiResponse) {
+    const response = await fetchResponse(text);
+    if (response) {
       const aiMessage = {
         id: Date.now(),
-        text: aiResponse,
+        text: response.text,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        audioUrl: response.audio
       };
       setMessages(prev => [...prev, aiMessage]);
+
+      // Play audio response
+      if (audioRef.current && response.audio) {
+        audioRef.current.src = response.audio;
+        audioRef.current.play().catch(console.error);
+      }
     }
   };
 
@@ -66,6 +69,7 @@ const MessageFeed = () => {
 
   return (
     <div className="space-y-2 h-full overflow-auto">
+      <audio ref={audioRef} className="hidden" />
       {messages.map((message) => (
         <div
           key={message.id}
@@ -75,6 +79,19 @@ const MessageFeed = () => {
             <p className="text-sm text-gray-300">{message.text}</p>
             <span className="text-xs text-gray-500">{message.time}</span>
           </div>
+          {message.audioUrl && (
+            <button
+              onClick={() => {
+                if (audioRef.current) {
+                  audioRef.current.src = message.audioUrl;
+                  audioRef.current.play().catch(console.error);
+                }
+              }}
+              className="mt-2 text-xs text-blue-400 hover:text-blue-300"
+            >
+              Play Audio
+            </button>
+          )}
         </div>
       ))}
     </div>
