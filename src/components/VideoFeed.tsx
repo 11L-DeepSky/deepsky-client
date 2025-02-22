@@ -1,12 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 
 interface VideoFeedProps {
-  onNewFrame?: (imageDescription: string, imageBase64: string) => void;
+  onNewFrame?: (imageDescription: string, imageUrl: string) => void;
 }
 
 const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
-  const [imageBase64Cache, setImageBase64Cache] = useState<string[]>([]);
 
   // Updated image URLs from ibb.co
   const images = [
@@ -17,62 +17,27 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     'https://i.ibb.co/zVKt8zC1/GSD3b7-PW4-AAQjm-D.png'
   ];
 
-  // Function to convert image URL to base64
-  const getImageAsBase64 = async (url: string): Promise<string> => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch image: ${response.statusText}`);
-      }
-      
-      const blob = await response.blob();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64String = reader.result as string;
-          // Keep the data:image format as required by OpenAI
-          resolve(base64String);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    } catch (error) {
-      console.error('Error converting image to base64:', error);
-      return '';
-    }
-  };
-
   useEffect(() => {
-    // Preload and cache all images as base64
-    const loadImages = async () => {
-      const base64Images = await Promise.all(
-        images.map(url => getImageAsBase64(url))
-      );
-      setImageBase64Cache(base64Images);
-
-      // Send initial frame description
-      if (onNewFrame && base64Images[0]) {
-        const imageDescription = `View from the cockpit of a small aircraft. Analyzing forward view for any potential aircraft or obstacles.`;
-        onNewFrame(imageDescription, base64Images[0]);
-      }
-    };
-
-    loadImages();
+    // Send initial frame
+    if (onNewFrame && images[0]) {
+      const imageDescription = `View from the cockpit of a small aircraft. Analyzing forward view for any potential aircraft or obstacles.`;
+      onNewFrame(imageDescription, images[0]);
+    }
 
     // Set up the image rotation interval
     const interval = setInterval(() => {
       setCurrentImageIndex(prev => {
         const nextIndex = (prev + 1) % images.length;
-        if (onNewFrame && imageBase64Cache[nextIndex]) {
+        if (onNewFrame && images[nextIndex]) {
           const imageDescription = `View from the cockpit of a small aircraft. Analyzing forward view for any potential aircraft or obstacles. Frame ${nextIndex + 1} of sequence.`;
-          onNewFrame(imageDescription, imageBase64Cache[nextIndex]);
+          onNewFrame(imageDescription, images[nextIndex]);
         }
         return nextIndex;
       });
     }, 30000); // 30 seconds
 
     return () => clearInterval(interval);
-  }, [imageBase64Cache.length]); // Depend on cache length to ensure we have the images
+  }, []); // No dependencies needed since we're using the static images array
 
   return (
     <div className="relative w-full h-full bg-black/20 rounded-md overflow-hidden">
