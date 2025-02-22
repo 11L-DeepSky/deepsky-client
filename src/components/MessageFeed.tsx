@@ -47,15 +47,7 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
   };
 
   const addMessage = async (text: string) => {
-    const newMessage = {
-      id: Date.now(),
-      text,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-
-    // Get AI response
+    // Get AI response without showing the input message
     const response = await fetchResponse(text);
     if (response) {
       const aiMessage = {
