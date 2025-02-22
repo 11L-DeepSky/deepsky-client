@@ -9,6 +9,7 @@ interface VideoFeedProps {
 const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
+  // Ensure image paths match exactly what's in the public folder
   const images = [
     '/lovable-uploads/4178e792-b2cc-498c-ac35-f55e2a44585a.png',
     '/lovable-uploads/74510882-619c-4748-bd05-78ea8c094f2b.png',
@@ -18,6 +19,12 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
   ];
 
   useEffect(() => {
+    // Preload images
+    images.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
+
     // Send initial frame
     if (onNewFrame) {
       const imageDescription = `View from the cockpit of a small aircraft. Analyzing forward view for any potential aircraft or obstacles.`;
@@ -44,8 +51,13 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     <div className="relative w-full h-full bg-black/20 rounded-md overflow-hidden">
       <img
         src={images[currentImageIndex]}
-        alt="Live Feed"
+        alt="Current View"
         className="w-full h-full object-cover"
+        onError={(e) => {
+          console.error('Image failed to load:', images[currentImageIndex]);
+          const target = e.target as HTMLImageElement;
+          target.style.display = 'none';
+        }}
       />
     </div>
   );
