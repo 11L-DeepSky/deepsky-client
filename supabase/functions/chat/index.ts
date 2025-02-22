@@ -58,7 +58,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4-vision-preview',
         messages: [
           { 
             role: 'system', 
@@ -110,8 +110,8 @@ serve(async (req) => {
       type: dot.type
     }));
 
-    // Generate voice with ElevenLabs
-    const voiceResponse = await fetch('https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM', {
+    // Generate voice with ElevenLabs using the specified voice ID
+    const voiceResponse = await fetch('https://api.elevenlabs.io/v1/text-to-speech/RT891KKpfzMkFmWhzYui', {
       method: 'POST',
       headers: {
         'Accept': 'audio/mpeg',
