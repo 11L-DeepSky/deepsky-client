@@ -29,8 +29,13 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
 
   const fetchResponse = async (userMessage: string, imageUrl: string) => {
     try {
+      console.log('Sending request with imageUrl:', imageUrl); // Debug log
+      
       const { data, error } = await supabase.functions.invoke('chat', {
-        body: { message: userMessage, imageUrl }
+        body: { 
+          message: userMessage, 
+          imageUrl: imageUrl 
+        }
       });
 
       if (error) {
@@ -55,6 +60,8 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
   };
 
   const addMessage = async (text: string, imageUrl: string) => {
+    console.log('addMessage called with:', { text, imageUrl }); // Debug log
+    
     // Get AI response without showing the input message
     const response = await fetchResponse(text, imageUrl);
     if (response) {

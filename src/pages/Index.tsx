@@ -17,9 +17,9 @@ const Index = () => {
   const [radarDots, setRadarDots] = useState<RadarDot[]>([]);
   const messageFeedRef = useRef<any>(null);
 
-  const handleNewFrame = (imageDescription: string) => {
+  const handleNewFrame = (imageDescription: string, imageUrl: string) => {
     if (messageFeedRef.current) {
-      messageFeedRef.current.addMessage(imageDescription);
+      messageFeedRef.current.addMessage(imageDescription, imageUrl);
     }
   };
 

@@ -37,7 +37,7 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     }, 30000); // 30 seconds
 
     return () => clearInterval(interval);
-  }, []); // No dependencies needed since we're using the static images array
+  }, []); 
 
   return (
     <div className="relative w-full h-full bg-black/20 rounded-md overflow-hidden">
