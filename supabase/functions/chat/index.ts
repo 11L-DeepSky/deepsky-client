@@ -39,6 +39,10 @@ serve(async (req) => {
     console.log('Received message:', message);
     console.log('Image URL:', imageUrl);
 
+    if (!imageUrl) {
+      throw new Error('Image URL is required');
+    }
+
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
     const elevenLabsKey = Deno.env.get('ELEVEN_LABS_API_KEY');
 
@@ -46,7 +50,7 @@ serve(async (req) => {
       throw new Error('Required API keys not found');
     }
 
-    // Call OpenAI API
+    // Call OpenAI API with properly structured message
     const chatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -63,16 +67,15 @@ serve(async (req) => {
           { 
             role: 'user', 
             content: [
-              { 
-                type: "text", 
-                text: message 
-              },
               {
                 type: "image_url",
                 image_url: {
-                  url: imageUrl,
-                  detail: "high"
+                  url: imageUrl
                 }
+              },
+              { 
+                type: "text", 
+                text: message 
               }
             ]
           }
@@ -84,7 +87,7 @@ serve(async (req) => {
     if (!chatResponse.ok) {
       const errorData = await chatResponse.json();
       console.error('OpenAI API error:', errorData);
-      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+      throw new Error(`OpenAI API error: ${JSON.stringify(errorData)}`);
     }
 
     const openaiData = await chatResponse.json();
