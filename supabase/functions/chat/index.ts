@@ -57,7 +57,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4-vision-preview',
         messages: [
           { 
             role: 'system', 
@@ -119,7 +119,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         text: aiResponse.message || "No threats detected",
-        model_id: "eleven_monolingual_v1",
+        model_id: "eleven_flash_v2_5",  // Updated to use the correct model
         voice_settings: {
           stability: 0.5,
           similarity_boost: 0.5
