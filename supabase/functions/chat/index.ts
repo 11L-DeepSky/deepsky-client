@@ -36,6 +36,9 @@ serve(async (req) => {
   try {
     const { message, imageBase64 } = await req.json();
 
+    console.log('Received message:', message);
+    console.log('Image data length:', imageBase64?.length || 0);
+
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
     const elevenLabsKey = Deno.env.get('ELEVEN_LABS_API_KEY');
 
@@ -43,8 +46,8 @@ serve(async (req) => {
       throw new Error('Required API keys not found');
     }
 
-    // Get AI response from OpenAI
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Call OpenAI API
+    const chatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openaiKey}`,
@@ -53,33 +56,46 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { 
+            role: 'system', 
+            content: SYSTEM_PROMPT 
+          },
           { 
             role: 'user', 
             content: [
-              { type: "text", text: message },
-              { type: "image_url", image_url: {
-                url: `data:image/png;base64,${imageBase64}`,
-                detail: "high"
-              }}
+              { 
+                type: "text", 
+                text: message 
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${imageBase64}`,
+                  detail: "high"
+                }
+              }
             ]
           }
         ],
+        max_tokens: 500
       }),
     });
 
-    if (!openaiResponse.ok) {
-      const errorData = await openaiResponse.json();
+    if (!chatResponse.ok) {
+      const errorData = await chatResponse.json();
       console.error('OpenAI API error:', errorData);
-      throw new Error('OpenAI API error');
+      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
     }
 
-    const openaiData = await openaiResponse.json();
+    const openaiData = await chatResponse.json();
+    console.log('OpenAI response:', openaiData);
+
     let aiResponse;
     try {
       aiResponse = JSON.parse(openaiData.choices[0].message.content);
     } catch (error) {
       console.error('Failed to parse OpenAI response:', error);
+      console.error('Raw response:', openaiData.choices[0].message.content);
       throw new Error('Invalid response format from OpenAI');
     }
 
