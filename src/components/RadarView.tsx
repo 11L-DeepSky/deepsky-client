@@ -19,8 +19,34 @@ const typeColors = {
 };
 
 const RadarView = ({ dots = [] }: RadarViewProps) => {
+  const [labels, setLabels] = useState<{ [key: string]: boolean }>({});
+
+  // Update labels based on current dots
+  useEffect(() => {
+    const newLabels = dots.reduce((acc, dot) => {
+      acc[dot.type] = true;
+      return acc;
+    }, {} as { [key: string]: boolean });
+    setLabels(newLabels);
+  }, [dots]);
+
   return (
     <div className="relative w-full h-full bg-black/80 rounded-md overflow-hidden">
+      {/* Label legend */}
+      <div className="absolute top-4 right-4 space-y-2 z-10">
+        {Object.entries(labels).map(([type]) => (
+          <div key={type} className="flex items-center justify-end space-x-2">
+            <span className="text-xs text-green-500 font-mono">
+              {type.replace('_', ' ')}
+            </span>
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: typeColors[type as keyof typeof typeColors] }} 
+            />
+          </div>
+        ))}
+      </div>
+
       {/* Semicircle background with distance rings */}
       <div className="absolute inset-0">
         <svg width="100%" height="100%" viewBox="0 0 100 50" preserveAspectRatio="none">
@@ -61,6 +87,19 @@ const RadarView = ({ dots = [] }: RadarViewProps) => {
           }}
         >
           <div className="absolute -inset-1 bg-current opacity-20 rounded-full animate-ping" />
+          
+          {/* Label for each dot */}
+          <div 
+            className="absolute left-full ml-2 whitespace-nowrap"
+            style={{
+              color: typeColors[dot.type],
+              fontSize: '0.65rem',
+              textShadow: '0 0 2px rgba(0,0,0,0.5)',
+              fontFamily: 'monospace'
+            }}
+          >
+            {dot.type.replace('_', ' ')}
+          </div>
         </div>
       ))}
 

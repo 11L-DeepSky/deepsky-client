@@ -24,12 +24,13 @@ interface Props {
 
 const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const fetchResponse = async (userMessage: string, imageUrl: string) => {
     try {
-      console.log('Sending request with imageUrl:', imageUrl); // Debug log
+      console.log('Sending request with imageUrl:', imageUrl);
       
       const { data, error } = await supabase.functions.invoke('chat', {
         body: { 
@@ -60,10 +61,13 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
   };
 
   const addMessage = async (text: string, imageUrl: string) => {
-    console.log('addMessage called with:', { text, imageUrl }); // Debug log
+    console.log('addMessage called with:', { text, imageUrl });
+    setIsLoading(true);
     
     // Get AI response without showing the input message
     const response = await fetchResponse(text, imageUrl);
+    setIsLoading(false);
+    
     if (response) {
       const aiMessage = {
         id: Date.now(),
@@ -72,7 +76,7 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
         audioUrl: response.audio,
         radarDots: response.radarDots
       };
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages(prev => [aiMessage, ...prev]); // Add new messages at the beginning
 
       // Update radar
       if (onRadarUpdate) {
@@ -95,6 +99,16 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
   return (
     <div className="space-y-2 h-full overflow-auto">
       <audio ref={audioRef} className="hidden" />
+      
+      {isLoading && (
+        <div className="bg-black/20 p-3 rounded-md backdrop-blur-sm animate-pulse">
+          <div className="flex justify-between items-start">
+            <div className="w-3/4 h-4 bg-gray-700 rounded"></div>
+            <div className="w-1/6 h-3 bg-gray-700 rounded"></div>
+          </div>
+        </div>
+      )}
+
       {messages.map((message) => (
         <div
           key={message.id}
