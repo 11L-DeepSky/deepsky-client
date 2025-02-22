@@ -72,7 +72,7 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
       const aiMessage = {
         id: Date.now(),
         text: response.text || "No threats detected",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
         audioUrl: response.audio,
         radarDots: response.radarDots
       };
@@ -83,8 +83,8 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
         onRadarUpdate(response.radarDots || []);
       }
 
-      // Only autoplay audio if radar dots are detected
-      if (audioRef.current && response.audio && response.radarDots && response.radarDots.length > 0) {
+      // Play audio
+      if (audioRef.current && response.audio) {
         audioRef.current.src = response.audio;
         audioRef.current.play().catch(console.error);
       }
