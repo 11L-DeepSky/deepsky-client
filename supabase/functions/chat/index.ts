@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const SYSTEM_PROMPT = `You are a spotter for a small airplane pilot. You will receive short video feeds from the forward view of the aircraft. Your job is to spot other aircraft and objects that could pose a potential threat. You must provide both textual analysis and radar positioning data.
+const SYSTEM_PROMPT = `You are a spotter for a small airplane pilot. You will receive an image from the forward view of the aircraft. Your job is to spot other aircraft and objects that could pose a potential threat. You must provide both textual analysis and radar positioning data.
 
 For each object you detect, you should provide:
 1. Distance (0-100, where 100 is the horizon)
@@ -9,7 +9,7 @@ For each object you detect, you should provide:
 
 Respond with ONLY JSON in this exact format:
 {
-  "message": "<clear, concise message about what you see>",
+  "message": "<clear, concise message about what you see. Focus on the number of objects, to be consistent with the radar dots.>",
   "radarDots": [
     {
       "distance": <number 0-100>,
