@@ -26,28 +26,30 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     isProcessing.current = true;
     
     try {
-      // Fetch the frame from the new endpoint
+      // Fetch the frame from the endpoint
       const response = await fetch('https://cd2af9606eaed8f7f92d2baab92cde2e.loophole.site/frame');
       const data = await response.json();
-      const base64Image = data.frame; // The endpoint already provides base64 encoded image
+      
+      // The endpoint already provides base64 encoded image
+      if (data && data.frame) {
+        // Update the displayed image
+        if (imageRef.current) {
+          imageRef.current.src = data.frame;
+        }
 
-      // Update the displayed image
-      if (imageRef.current) {
-        imageRef.current.src = base64Image;
-      }
-
-      // Send frame for analysis
-      if (onNewFrame) {
-        try {
-          await onNewFrame(
-            'Analyzing current frame for potential aircraft or obstacles.',
-            base64Image
-          );
-          console.log('Frame successfully analyzed');
-          lastCaptureTime.current = Date.now();
-        } catch (error) {
-          console.error('Error from Supabase analysis:', error);
-          // Don't throw here - we want to continue the loop even if analysis fails
+        // Send frame for analysis
+        if (onNewFrame) {
+          try {
+            await onNewFrame(
+              'Analyzing current frame for potential aircraft or obstacles.',
+              data.frame
+            );
+            console.log('Frame successfully analyzed');
+            lastCaptureTime.current = Date.now();
+          } catch (error) {
+            console.error('Error from Supabase analysis:', error);
+            // Don't throw here - we want to continue the loop even if analysis fails
+          }
         }
       }
     } catch (error) {
