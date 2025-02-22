@@ -32,9 +32,14 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
       
       // The endpoint already provides base64 encoded image
       if (data && data.frame) {
+        // Ensure the image data starts with proper data URL prefix if not present
+        const imageUrl = data.frame.startsWith('data:') 
+          ? data.frame 
+          : `data:image/jpeg;base64,${data.frame}`;
+
         // Update the displayed image
         if (imageRef.current) {
-          imageRef.current.src = data.frame;
+          imageRef.current.src = imageUrl;
         }
 
         // Send frame for analysis
@@ -42,7 +47,7 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
           try {
             await onNewFrame(
               'Analyzing current frame for potential aircraft or obstacles.',
-              data.frame
+              imageUrl
             );
             console.log('Frame successfully analyzed');
             lastCaptureTime.current = Date.now();
