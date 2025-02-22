@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -8,7 +9,7 @@ For each object you detect, provide:
 2. Angle (-90 to 90 degrees, where 0 is straight ahead, negative values for left, positive values for right)
 3. Bounding box coordinates (x1, y1, x2, y2 in percentage of image dimensions, where 0,0 is top-left and 100,100 is bottom-right)
 
-Respond with ONLY JSON in this exact format:
+IMPORTANT: Respond with raw JSON only. Do not include markdown formatting, code blocks, or any other text. Your entire response must be valid JSON in this exact format:
 {
   "message": "<clear, concise message about what you see>",
   "radarDots": [
@@ -97,10 +98,17 @@ serve(async (req) => {
 
     const openaiData = await chatResponse.json();
     console.log('OpenAI response received');
+    console.log('Raw response:', openaiData.choices[0].message.content);
 
     let aiResponse;
     try {
-      aiResponse = JSON.parse(openaiData.choices[0].message.content);
+      // Clean the response by removing any markdown formatting
+      const cleanedResponse = openaiData.choices[0].message.content
+        .replace(/```json\n?/, '')  // Remove opening ```json
+        .replace(/```\n?$/, '')     // Remove closing ```
+        .trim();                    // Remove any extra whitespace
+      
+      aiResponse = JSON.parse(cleanedResponse);
     } catch (error) {
       console.error('Failed to parse OpenAI response:', error);
       console.error('Raw response:', openaiData.choices[0].message.content);
@@ -113,12 +121,7 @@ serve(async (req) => {
       y: 50 - (Math.cos(dot.angle * Math.PI / 180) * dot.distance / 2),
       size: dot.size,
       type: dot.type,
-      boundingBox: {
-        x1: dot.boundingBox.x1,
-        y1: dot.boundingBox.y1,
-        x2: dot.boundingBox.x2,
-        y2: dot.boundingBox.y2
-      }
+      boundingBox: dot.boundingBox
     }));
 
     // Generate voice with ElevenLabs using the specified voice ID
@@ -131,7 +134,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         text: aiResponse.message || "No threats detected",
-        model_id: "eleven_flash_v2_5",  // Updated to use the correct model
+        model_id: "eleven_flash_v2_5",
         voice_settings: {
           stability: 0.5,
           similarity_boost: 0.5
