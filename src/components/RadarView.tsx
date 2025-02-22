@@ -1,16 +1,29 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const RadarView = () => {
+  const [currentImage, setCurrentImage] = useState(1);
+  const [totalImages] = useState(10); // Assuming there are 10 images, adjust as needed
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => (prev % totalImages) + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [totalImages]);
+
   return (
     <div className="relative w-full h-full bg-black/20 rounded-md overflow-hidden">
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-48 h-48 rounded-full border-2 border-green-500/20 animate-pulse">
-          <div className="w-32 h-32 rounded-full border-2 border-green-500/40 m-auto mt-8">
-            <div className="w-16 h-16 rounded-full border-2 border-green-500/60 m-auto mt-8" />
-          </div>
-        </div>
-      </div>
+      <img
+        src={`/radar/${currentImage}.jpeg`}
+        alt={`Radar View ${currentImage}`}
+        className="w-full h-full object-cover"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.src = '/placeholder.svg';
+        }}
+      />
     </div>
   );
 };
