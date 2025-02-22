@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from "@/integrations/supabase/client";
 
 interface VideoFeedProps {
   onNewFrame?: (imageDescription: string) => void;
@@ -9,23 +8,23 @@ interface VideoFeedProps {
 const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
-  // Ensure image paths match exactly what's in the public folder
+  // Updated image paths with the new uploads
   const images = [
-    '/lovable-uploads/4178e792-b2cc-498c-ac35-f55e2a44585a.png',
-    '/lovable-uploads/74510882-619c-4748-bd05-78ea8c094f2b.png',
-    '/lovable-uploads/77cc8515-d8e1-4863-8abb-14cc1a0df0f0.png',
-    '/lovable-uploads/9f47fd5d-8251-4e7b-b022-bf6a54fb92cc.png',
-    '/lovable-uploads/ca63b729-1c25-4336-8add-fd87242f2135.png'
+    '/lovable-uploads/1a71c9c0-6e9e-4052-a65f-3e2c80669fe3.png',
+    '/lovable-uploads/f399dd6a-801b-43b4-8fd1-566849f7baca.png',
+    '/lovable-uploads/974d7639-934d-448d-8854-babe9f8e0468.png',
+    '/lovable-uploads/50d82fb5-ad0e-496f-bc3d-33cad599f167.png',
+    '/lovable-uploads/ace6539d-0fad-4aaf-9345-c2e50585479a.png'
   ];
 
   useEffect(() => {
-    // Preload images
+    // Preload images to ensure they're in browser cache
     images.forEach(src => {
       const img = new Image();
       img.src = src;
     });
 
-    // Send initial frame
+    // Send initial frame description
     if (onNewFrame) {
       const imageDescription = `View from the cockpit of a small aircraft. Analyzing forward view for any potential aircraft or obstacles.`;
       onNewFrame(imageDescription);
@@ -35,7 +34,6 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     const interval = setInterval(() => {
       setCurrentImageIndex(prev => {
         const nextIndex = (prev + 1) % images.length;
-        // When image changes, send the new frame for analysis
         if (onNewFrame) {
           const imageDescription = `View from the cockpit of a small aircraft. Analyzing forward view for any potential aircraft or obstacles. Frame ${nextIndex + 1} of sequence.`;
           onNewFrame(imageDescription);
@@ -49,16 +47,26 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
 
   return (
     <div className="relative w-full h-full bg-black/20 rounded-md overflow-hidden">
-      <img
-        src={images[currentImageIndex]}
-        alt="Current View"
-        className="w-full h-full object-cover"
-        onError={(e) => {
-          console.error('Image failed to load:', images[currentImageIndex]);
-          const target = e.target as HTMLImageElement;
-          target.style.display = 'none';
-        }}
-      />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <img
+          key={images[currentImageIndex]} // Add key to force re-render on image change
+          src={images[currentImageIndex]}
+          alt={`Aircraft view frame ${currentImageIndex + 1}`}
+          className="w-full h-full object-contain"
+          onError={(e) => {
+            console.error('Image failed to load:', images[currentImageIndex]);
+            const target = e.target as HTMLImageElement;
+            target.style.opacity = '0';
+          }}
+          onLoad={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.style.opacity = '1';
+          }}
+          style={{
+            transition: 'opacity 0.3s ease-in-out'
+          }}
+        />
+      </div>
     </div>
   );
 };
