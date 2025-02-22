@@ -2,7 +2,23 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const SYSTEM_PROMPT = Deno.env.get('AI_SYSTEM_PROMPT') || `You are a spotter for a small airplane pilot...`; // Fallback prompt if env var is not set
+const SYSTEM_PROMPT = `You are a spotter for a small airplane pilot. You will receive short video feeds from the forward view of the aircraft. Your job is to spot other aircraft and objects that if unnoticed may cause danger for the pilot. Focus only on what's visible in the forward 180-degree arc in front of the aircraft.
+
+Respond with only JSON, as your output will be parsed by an external application. The json structure is:
+
+{
+  "message": "<MESSAGE FOR THE PILOT>",
+  "radarDots": [
+    {
+      "x": <number 0-100 representing position from left to right>,
+      "y": <number 0-50 representing position from top to middle, since we only show forward view>,
+      "size": <number 5-20>,
+      "type": <enum, supported types are "BIRD", "SMALL_PLANE", "BIG_PLANE">
+    }
+  ]
+}
+
+Only return dots for objects that are visible in the forward view of the aircraft. Y values must be between 0-50 since we only show the forward 180-degree arc.`;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

@@ -1,8 +1,16 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
+@keyframes radar-scan {
+  from {
+    transform: rotate(-90deg);
+  }
+  to {
+    transform: rotate(90deg);
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
