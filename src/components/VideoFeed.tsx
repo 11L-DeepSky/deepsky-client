@@ -18,25 +18,32 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     const video = playerRef.current.target.getIframe();
     
     // Set canvas size to match video dimensions
-    canvas.width = video.clientWidth;
-    canvas.height = video.clientHeight;
+    canvas.width = 640; // Standard YouTube video width
+    canvas.height = 360; // Standard YouTube video height
     
     // Draw the current frame to canvas
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Create a temporary video element to capture the frame
+    const tempVideo = document.createElement('video');
+    tempVideo.crossOrigin = 'anonymous';
+    tempVideo.src = `https://www.youtube.com/embed/${playerRef.current.target.getVideoData().video_id}?autoplay=1&mute=1`;
     
-    // Convert to base64
-    const base64Image = canvas.toDataURL('image/jpeg', 0.8);
+    tempVideo.onloadedmetadata = () => {
+      ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
+      
+      // Convert to base64
+      const base64Image = canvas.toDataURL('image/jpeg', 0.8);
 
-    // Send frame for analysis
-    if (onNewFrame) {
-      onNewFrame(
-        'Analyzing current frame for potential aircraft or obstacles.',
-        base64Image
-      );
-    }
+      // Send frame for analysis
+      if (onNewFrame) {
+        onNewFrame(
+          'Analyzing current frame for potential aircraft or obstacles.',
+          base64Image
+        );
+      }
+    };
   };
 
   const handlePlayerReady = (event: any) => {
