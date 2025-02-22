@@ -10,11 +10,11 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
   const images = [
-    '/lovable-uploads/51dc6c30-bd99-4149-983b-e1ec50204f1e.png',
-    '/lovable-uploads/61a5c3cb-d005-42c8-b6d8-f86fa8591ed0.png',
-    '/lovable-uploads/6de64cd6-3c8e-41ac-b64b-c582af4de3d5.png',
-    '/lovable-uploads/f9fe9a4e-e7f9-4bf9-ab84-7bd61e2b5453.png',
-    '/lovable-uploads/d2609a86-937f-41d3-b7b1-466eee05ce88.png'
+    'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7',
+    'https://images.unsplash.com/photo-1460925895917-afdab827c52f',
+    'https://images.unsplash.com/photo-1485827404703-89b55fcc595e',
+    'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158',
+    'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7'
   ];
 
   useEffect(() => {
