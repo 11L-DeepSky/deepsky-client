@@ -28,7 +28,7 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     
     try {
       // Fetch the frame from the endpoint
-      const response = await fetch('https://cd2af9606eaed8f7f92d2baab92cde2e.loophole.site/frame');
+      const response = await fetch('https://dbef79f81ca0b74a7997597556c925f0.loophole.site/frame');
       const data = await response.json();
       
       // The endpoint already provides base64 encoded image
