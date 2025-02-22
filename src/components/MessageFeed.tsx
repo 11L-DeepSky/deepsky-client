@@ -35,7 +35,8 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
       const { data, error } = await supabase.functions.invoke('chat', {
         body: { 
           message: userMessage, 
-          imageUrl: imageUrl 
+          imageUrl: imageUrl,
+          modelId: "eleven_flash_v2_5"  // Updated model ID for ElevenLabs
         }
       });
 
