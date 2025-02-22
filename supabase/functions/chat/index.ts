@@ -7,8 +7,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const SYSTEM_PROMPT = `You are a spotter for a small airplane pilot. You will receive short video feeds, your job is to spot other planes and objects that if unnoticed may cause danger for the pilot. Respond with only JSON, as your output will be parsed by an external application. The json structure is:
+
+{
+  "message": "<MESSAGE FOR THE PILOT>",
+  "radarDots": [
+    {
+      "x": <number>,
+      "y": <number>,
+      "size": <number>,
+      "type": <enum, supported types are, "BIRD", "SMALL_PLANE", "BIG_PLANE">
+    }
+  ]
+}
+
+You can return empty strings for the message and empty array for objects if nothing is spotted.`;
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -26,7 +41,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You are a helpful AI assistant integrated into a dashboard system. Keep responses concise and relevant.' },
+          { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: message }
         ],
       }),
@@ -37,7 +52,7 @@ serve(async (req) => {
     }
 
     const openaiData = await openaiResponse.json();
-    const aiText = openaiData.choices[0].message.content;
+    const aiResponse = JSON.parse(openaiData.choices[0].message.content);
 
     // Generate voice with ElevenLabs
     const voiceResponse = await fetch('https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM', {
@@ -48,7 +63,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        text: aiText,
+        text: aiResponse.message || "No threats detected",
         model_id: "eleven_monolingual_v1",
         voice_settings: {
           stability: 0.5,
@@ -67,8 +82,9 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        text: aiText,
-        audio: `data:audio/mpeg;base64,${audioBase64}`
+        text: aiResponse.message,
+        audio: `data:audio/mpeg;base64,${audioBase64}`,
+        radarDots: aiResponse.radarDots || []
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

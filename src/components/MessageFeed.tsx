@@ -3,14 +3,26 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+interface RadarDot {
+  x: number;
+  y: number;
+  size: number;
+  type: 'BIRD' | 'SMALL_PLANE' | 'BIG_PLANE';
+}
+
 interface Message {
   id: number;
   text: string;
   time: string;
   audioUrl?: string;
+  radarDots?: RadarDot[];
 }
 
-const MessageFeed = () => {
+interface Props {
+  onRadarUpdate?: (dots: RadarDot[]) => void;
+}
+
+const MessageFeed = ({ onRadarUpdate }: Props) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -48,13 +60,19 @@ const MessageFeed = () => {
     if (response) {
       const aiMessage = {
         id: Date.now(),
-        text: response.text,
+        text: response.text || "No threats detected",
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        audioUrl: response.audio
+        audioUrl: response.audio,
+        radarDots: response.radarDots
       };
       setMessages(prev => [...prev, aiMessage]);
 
-      // Play audio response
+      // Update radar
+      if (onRadarUpdate) {
+        onRadarUpdate(response.radarDots || []);
+      }
+
+      // Automatically play audio response
       if (audioRef.current && response.audio) {
         audioRef.current.src = response.audio;
         audioRef.current.play().catch(console.error);
