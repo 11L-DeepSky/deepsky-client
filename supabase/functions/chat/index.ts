@@ -36,8 +36,7 @@ serve(async (req) => {
   try {
     const { message, imageUrl } = await req.json();
 
-    console.log('Received message:', message);
-    console.log('Image URL:', imageUrl);
+    console.log('Received message.');
 
     if (!imageUrl) {
       throw new Error('Image URL is required');
@@ -70,7 +69,7 @@ serve(async (req) => {
               {
                 type: "image_url",
                 image_url: {
-                  url: imageUrl
+                  url: imageUrl.startsWith('data:') ? imageUrl : `data:image/jpeg;base64,${imageUrl}`
                 }
               },
               { 

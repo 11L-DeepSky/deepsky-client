@@ -1,66 +1,90 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import YouTube from 'react-youtube';
 
 interface VideoFeedProps {
-  onNewFrame?: (imageDescription: string, imageUrl: string) => void;
+  onNewFrame?: (imageDescription: string, imageData: string) => void;
 }
 
 const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const playerRef = useRef<any>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
 
-  // Updated image URLs from ibb.co
-  const images = [
-    'https://i.ibb.co/8gyFbKYd/hq720.png',
-    'https://i.ibb.co/gZRYmpw8/800x450-q95.png',
-    'https://i.ibb.co/XZ14k561/129936813-p0frbscf.png',
-    'https://i.ibb.co/hF0DxFGP/110302-F-TY646-073.png',
-    'https://i.ibb.co/zVKt8zC1/GSD3b7-PW4-AAQjm-D.png'
-  ];
+  const captureFrame = () => {
+    if (!canvasRef.current || !playerRef.current) return;
+
+    const canvas = canvasRef.current;
+    const video = playerRef.current.getInternalPlayer();
+    
+    // Set canvas size to match video dimensions
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Draw the current frame to canvas
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Convert to base64
+    const base64Image = canvas.toDataURL('image/jpeg', 0.8);
+
+    // Send frame for analysis
+    if (onNewFrame) {
+      onNewFrame(
+        'Analyzing current frame for potential aircraft or obstacles.',
+        base64Image
+      );
+    }
+  };
+
+  const handlePlayerReady = (event: any) => {
+    playerRef.current = event.target;
+    // Capture initial frame after a short delay to ensure video is playing
+    setTimeout(() => {
+      captureFrame();
+      setIsCapturing(true);
+    }, 2000);
+  };
 
   useEffect(() => {
-    // Send initial frame
-    if (onNewFrame && images[0]) {
-      const imageDescription = `View from the cockpit of a small aircraft. Analyzing forward view for any potential aircraft or obstacles.`;
-      onNewFrame(imageDescription, images[0]);
+    // When we get isCapturing = true, start the capture loop
+    if (isCapturing) {
+      const intervalId = setInterval(() => {
+        captureFrame();
+      }, 30000); // Capture every 30 seconds
+
+      return () => clearInterval(intervalId);
     }
-
-    // Set up the image rotation interval
-    const interval = setInterval(() => {
-      setCurrentImageIndex(prev => {
-        const nextIndex = (prev + 1) % images.length;
-        if (onNewFrame && images[nextIndex]) {
-          const imageDescription = `View from the cockpit of a small aircraft. Analyzing forward view for any potential aircraft or obstacles. Frame ${nextIndex + 1} of sequence.`;
-          onNewFrame(imageDescription, images[nextIndex]);
-        }
-        return nextIndex;
-      });
-    }, 30000); // 30 seconds
-
-    return () => clearInterval(interval);
-  }, []); 
+  }, [isCapturing]);
 
   return (
     <div className="relative w-full h-full bg-black/20 rounded-md overflow-hidden">
       <div className="absolute inset-0 flex items-center justify-center">
-        <img
-          key={images[currentImageIndex]}
-          src={images[currentImageIndex]}
-          alt={`Aircraft view frame ${currentImageIndex + 1}`}
-          className="w-full h-full object-contain"
-          onError={(e) => {
-            console.error('Image failed to load:', images[currentImageIndex]);
-            const target = e.target as HTMLImageElement;
-            target.style.opacity = '0';
+        <YouTube
+          videoId="zMhzoNhSZTA"
+          opts={{
+            height: '100%',
+            width: '100%',
+            playerVars: {
+              autoplay: 1,
+              mute: 1,
+              controls: 0,
+              modestbranding: 1,
+              loop: 1,
+              playlist: 'zMhzoNhSZTA', // Required for looping
+            },
           }}
-          onLoad={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.style.opacity = '1';
-          }}
-          style={{
-            transition: 'opacity 0.3s ease-in-out'
-          }}
+          onReady={handlePlayerReady}
+          className="w-full h-full"
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
         />
       </div>
+      <canvas 
+        ref={canvasRef} 
+        style={{ display: 'none' }}
+      />
     </div>
   );
 };
