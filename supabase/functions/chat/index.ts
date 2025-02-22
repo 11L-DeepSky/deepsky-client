@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -7,9 +8,14 @@ For each object you detect, you should provide:
 1. Distance (0-100, where 100 is the horizon)
 2. Angle (-90 to 90 degrees, where 0 is straight ahead, negative values for left, positive values for right)
 
+When describing objects in the message, ALWAYS include their relative position, for example:
+- "Aircraft spotted 15 degrees to the left"
+- "Two birds detected 30 degrees to the right"
+- "Large aircraft ahead, slightly elevated"
+
 Respond with ONLY JSON in this exact format:
 {
-  "message": "<clear, concise message about what you see. Focus on the number of objects, to be consistent with the radar dots.>",
+  "message": "<clear, concise message about what you see, INCLUDING POSITIONAL INFORMATION for each detected object>",
   "radarDots": [
     {
       "distance": <number 0-100>,
@@ -118,7 +124,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         text: aiResponse.message || "No threats detected",
-        model_id: "eleven_flash_v2_5",  // Updated to use the correct model
+        model_id: "eleven_flash_v2_5",
         voice_settings: {
           stability: 0.5,
           similarity_boost: 0.5
