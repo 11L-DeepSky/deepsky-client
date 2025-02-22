@@ -26,6 +26,7 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const isInitializedRef = useRef(false);
 
   const fetchResponse = async (userMessage: string) => {
     try {
@@ -86,8 +87,11 @@ const MessageFeed = forwardRef(({ onRadarUpdate }: Props, ref) => {
   }));
 
   useEffect(() => {
-    // Initial system message
-    addMessage("Systems initialized");
+    // Only initialize once
+    if (!isInitializedRef.current) {
+      isInitializedRef.current = true;
+      addMessage("Systems initialized");
+    }
   }, []);
 
   return (

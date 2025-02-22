@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
 import DashboardSection from '@/components/DashboardSection';
 import VideoFeed from '@/components/VideoFeed';
 import RadarView from '@/components/RadarView';
@@ -15,11 +15,11 @@ interface RadarDot {
 
 const Index = () => {
   const [radarDots, setRadarDots] = useState<RadarDot[]>([]);
-  const [messageFeedRef, setMessageFeedRef] = useState<any>(null);
+  const messageFeedRef = useRef<any>(null);
 
   const handleNewFrame = (imageDescription: string) => {
-    if (messageFeedRef) {
-      messageFeedRef.addMessage(imageDescription);
+    if (messageFeedRef.current) {
+      messageFeedRef.current.addMessage(imageDescription);
     }
   };
 
@@ -32,7 +32,7 @@ const Index = () => {
         
         <DashboardSection title="Message Feed" className="h-[calc(50vh-2rem)]">
           <MessageFeed 
-            ref={setMessageFeedRef}
+            ref={messageFeedRef}
             onRadarUpdate={setRadarDots} 
           />
         </DashboardSection>
