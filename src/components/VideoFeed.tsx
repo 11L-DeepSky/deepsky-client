@@ -8,7 +8,7 @@ const VideoFeed = () => {
     const interval = setInterval(() => {
       // Generate a random number to prevent caching
       const timestamp = new Date().getTime();
-      setImageUrl(`/video-feed/latest.jpg?t=${timestamp}`);
+      setImageUrl(`https://via.assets.so/img.jpg?w=400&h=150&tc=blue&bg=#cecece&t=${timestamp}`);
     }, 1000);
 
     return () => clearInterval(interval);
