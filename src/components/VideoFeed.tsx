@@ -18,6 +18,12 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
   ];
 
   useEffect(() => {
+    // Send initial frame
+    if (onNewFrame) {
+      const imageDescription = `View from an aircraft showing a military aircraft in flight at high altitude. The image shows image number 1 in the sequence.`;
+      onNewFrame(imageDescription);
+    }
+
     // Set up the image rotation interval
     const interval = setInterval(() => {
       setCurrentImageIndex(prev => {
@@ -31,14 +37,8 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
       });
     }, 30000); // 30 seconds
 
-    // Send initial frame
-    if (onNewFrame) {
-      const imageDescription = `View from an aircraft showing a military aircraft in flight at high altitude. The image shows image number 1 in the sequence.`;
-      onNewFrame(imageDescription);
-    }
-
     return () => clearInterval(interval);
-  }, [onNewFrame]);
+  }, []); // Only run on mount
 
   return (
     <div className="relative w-full h-full bg-black/20 rounded-md overflow-hidden">
