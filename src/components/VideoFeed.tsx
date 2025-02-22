@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Play, Pause } from "lucide-react";
 
 interface VideoFeedProps {
   onNewFrame?: (imageDescription: string, imageData: string) => void;
@@ -82,7 +84,21 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
   const handlePlayerReady = (event: any) => {
     console.log('YouTube player ready');
     playerRef.current = event;
-    setIsCapturing(true);
+  };
+
+  const toggleCapturing = () => {
+    if (!isCapturing) {
+      toast({
+        title: "Starting Analysis",
+        description: "Beginning automatic frame analysis",
+      });
+    } else {
+      toast({
+        title: "Stopping Analysis",
+        description: "Frame analysis paused",
+      });
+    }
+    setIsCapturing(!isCapturing);
   };
 
   useEffect(() => {
@@ -98,7 +114,6 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     // Cleanup
     return () => {
       clearInterval(intervalId);
-      setIsCapturing(false);
     };
   }, [isCapturing]);
 
@@ -123,6 +138,26 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
           className="w-full h-full"
           style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
         />
+      </div>
+      <div className="absolute top-4 right-4 z-10">
+        <Button
+          onClick={toggleCapturing}
+          variant={isCapturing ? "destructive" : "default"}
+          size="sm"
+          className="gap-2"
+        >
+          {isCapturing ? (
+            <>
+              <Pause className="w-4 h-4" />
+              Stop Analysis
+            </>
+          ) : (
+            <>
+              <Play className="w-4 h-4" />
+              Start Analysis
+            </>
+          )}
+        </Button>
       </div>
       <canvas 
         ref={canvasRef} 
