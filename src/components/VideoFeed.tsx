@@ -10,6 +10,7 @@ interface VideoFeedProps {
 const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const playerRef = useRef<any>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const lastCaptureTime = useRef<number>(0);
   const isProcessing = useRef<boolean>(false);
@@ -37,25 +38,17 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     if (!ctx) return;
     
     try {
-      // Get the video ID for logging
-      const videoId = playerRef.current.target.getVideoData().video_id;
-      console.log('Capturing frame at:', new Date().toISOString());
-      
-      // Instead of trying to capture the actual frame, use a thumbnail
-      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hq720.jpg`;
-      
-      // Create an image element to load the thumbnail
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
+      // Get the current frame using the YouTube player's iframe
+      const iframeWindow = playerRef.current.target.getIframe().contentWindow;
+      const iframeDocument = iframeWindow.document;
+      const videoElement = iframeDocument.querySelector('video');
 
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = thumbnailUrl;
-      });
+      if (!videoElement) {
+        throw new Error('Video element not found in iframe');
+      }
 
-      // Draw the image to canvas
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // Draw the video frame to the canvas
+      ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
       
       // Convert to base64
       const base64Image = canvas.toDataURL('image/jpeg', 0.8);
