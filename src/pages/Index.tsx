@@ -17,9 +17,9 @@ const Index = () => {
   const [radarDots, setRadarDots] = useState<RadarDot[]>([]);
   const messageFeedRef = useRef<any>(null);
 
-  const handleNewFrame = (imageDescription: string, imageUrl: string) => {
+  const handleNewFrame = async (imageDescription: string, imageUrl: string): Promise<void> => {
     if (messageFeedRef.current) {
-      messageFeedRef.current.addMessage(imageDescription, imageUrl);
+      await messageFeedRef.current.addMessage(imageDescription, imageUrl);
     }
   };
 
