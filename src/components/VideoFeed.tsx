@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 
 interface VideoFeedProps {
@@ -22,14 +21,17 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
   const getImageAsBase64 = async (url: string): Promise<string> => {
     try {
       const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.statusText}`);
+      }
+      
       const blob = await response.blob();
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onloadend = () => {
           const base64String = reader.result as string;
-          // Remove the data:image/png;base64, prefix
-          const base64 = base64String.split(',')[1];
-          resolve(base64);
+          // Keep the data:image format as required by OpenAI
+          resolve(base64String);
         };
         reader.onerror = reject;
         reader.readAsDataURL(blob);

@@ -37,13 +37,17 @@ serve(async (req) => {
     const { message, imageBase64 } = await req.json();
 
     console.log('Received message:', message);
-    console.log('Image data length:', imageBase64?.length || 0);
+    console.log('Image data present:', !!imageBase64);
 
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
     const elevenLabsKey = Deno.env.get('ELEVEN_LABS_API_KEY');
 
     if (!openaiKey || !elevenLabsKey) {
       throw new Error('Required API keys not found');
+    }
+
+    if (!imageBase64 || !imageBase64.startsWith('data:image/')) {
+      throw new Error('Invalid image format. Expected data URL.');
     }
 
     // Call OpenAI API
@@ -70,7 +74,7 @@ serve(async (req) => {
               {
                 type: "image_url",
                 image_url: {
-                  url: `data:image/jpeg;base64,${imageBase64}`,
+                  url: imageBase64,
                   detail: "high"
                 }
               }
@@ -88,7 +92,7 @@ serve(async (req) => {
     }
 
     const openaiData = await chatResponse.json();
-    console.log('OpenAI response:', openaiData);
+    console.log('OpenAI response received');
 
     let aiResponse;
     try {
