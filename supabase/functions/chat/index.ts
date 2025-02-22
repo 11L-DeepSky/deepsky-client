@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -6,7 +5,7 @@ const SYSTEM_PROMPT = `You are a spotter for a small airplane pilot. You will re
 
 For each object you detect, you should provide:
 1. Distance (0-100, where 100 is the horizon)
-2. Angle (-90 to +90 degrees, where 0 is straight ahead, -90 is far left, +90 is far right)
+2. Angle (-90 to 90 degrees, where 0 is straight ahead, negative values for left, positive values for right)
 
 Respond with ONLY JSON in this exact format:
 {
@@ -14,14 +13,14 @@ Respond with ONLY JSON in this exact format:
   "radarDots": [
     {
       "distance": <number 0-100>,
-      "angle": <number -90 to +90>,
+      "angle": <number -90 to 90>,
       "size": <number 5-20>,
       "type": <"BIRD" | "SMALL_PLANE" | "BIG_PLANE">
     }
   ]
 }
 
-Be as accurate as possible with distance and angle estimations based on the visual information.`;
+Be as accurate as possible with distance and angle estimations based on the visual information. Never include + sign for positive numbers.`;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
