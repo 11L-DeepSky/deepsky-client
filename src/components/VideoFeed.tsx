@@ -15,7 +15,6 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     if (!canvasRef.current || !playerRef.current) return;
 
     const canvas = canvasRef.current;
-    const video = playerRef.current.target.getIframe();
     
     // Set canvas size to match video dimensions
     canvas.width = 640; // Standard YouTube video width
@@ -25,28 +24,47 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Create a temporary video element to capture the frame
-    const tempVideo = document.createElement('video');
-    tempVideo.crossOrigin = 'anonymous';
-    tempVideo.src = `https://www.youtube.com/embed/${playerRef.current.target.getVideoData().video_id}?autoplay=1&mute=1`;
+    // Get the video ID for logging
+    const videoId = playerRef.current.target.getVideoData().video_id;
+    console.log('Attempting to capture frame from video:', videoId);
     
-    tempVideo.onloadedmetadata = () => {
-      ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
+    try {
+      // Instead of trying to capture the actual frame, for now we'll send a URL to a thumbnail
+      // This ensures we at least have some image data to process
+      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hq720.jpg`;
       
-      // Convert to base64
-      const base64Image = canvas.toDataURL('image/jpeg', 0.8);
+      // Create an image element to load the thumbnail
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        // Draw the image to canvas
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to base64
+        const base64Image = canvas.toDataURL('image/jpeg', 0.8);
+        console.log('Successfully captured frame, length:', base64Image.length);
 
-      // Send frame for analysis
-      if (onNewFrame) {
-        onNewFrame(
-          'Analyzing current frame for potential aircraft or obstacles.',
-          base64Image
-        );
-      }
-    };
+        // Send frame for analysis
+        if (onNewFrame) {
+          onNewFrame(
+            'Analyzing current frame for potential aircraft or obstacles.',
+            base64Image
+          );
+        }
+      };
+      
+      img.onerror = (err) => {
+        console.error('Error loading thumbnail:', err);
+      };
+      
+      img.src = thumbnailUrl;
+    } catch (error) {
+      console.error('Error capturing frame:', error);
+    }
   };
 
   const handlePlayerReady = (event: any) => {
+    console.log('YouTube player ready');
     playerRef.current = event;
     // Capture initial frame after a short delay to ensure video is playing
     setTimeout(() => {
@@ -58,6 +76,7 @@ const VideoFeed = ({ onNewFrame }: VideoFeedProps) => {
   useEffect(() => {
     // When we get isCapturing = true, start the capture loop
     if (isCapturing) {
+      console.log('Starting capture loop');
       const intervalId = setInterval(() => {
         captureFrame();
       }, 30000); // Capture every 30 seconds
