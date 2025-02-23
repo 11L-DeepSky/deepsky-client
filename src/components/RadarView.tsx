@@ -1,12 +1,5 @@
-
-import React, { useEffect, useState } from 'react';
-
-interface RadarDot {
-  x: number;
-  y: number;
-  size: number;
-  type: 'BIRD' | 'SMALL_PLANE' | 'BIG_PLANE';
-}
+import React, {useEffect, useState} from 'react';
+import {RadarDot} from "@/types.ts";
 
 interface RadarViewProps {
   dots?: RadarDot[];
@@ -18,7 +11,7 @@ const typeColors = {
   BIG_PLANE: '#FF0000'
 };
 
-const RadarView = ({ dots = [] }: RadarViewProps) => {
+const RadarView = ({dots = []}: RadarViewProps) => {
   const [labels, setLabels] = useState<{ [key: string]: boolean }>({});
 
   // Update labels based on current dots
@@ -40,7 +33,7 @@ const RadarView = ({ dots = [] }: RadarViewProps) => {
           <circle cx="50" cy="50" r="30" fill="none" stroke="#001100" strokeWidth="0.5"/>
           <circle cx="50" cy="50" r="20" fill="none" stroke="#001100" strokeWidth="0.5"/>
           <circle cx="50" cy="50" r="10" fill="none" stroke="#001100" strokeWidth="0.5"/>
-          
+
           {/* Mask to show only top half */}
           <rect x="0" y="50" width="100" height="50" fill="black"/>
         </svg>
@@ -48,7 +41,7 @@ const RadarView = ({ dots = [] }: RadarViewProps) => {
 
       {/* Scanning line */}
       <div className="absolute inset-x-0 bottom-0 origin-bottom">
-        <div 
+        <div
           className="h-full w-[2px] mx-auto bg-gradient-to-t from-green-500/80 to-transparent"
           style={{
             animation: 'radar-scan 4s linear infinite',
@@ -71,10 +64,10 @@ const RadarView = ({ dots = [] }: RadarViewProps) => {
             transform: 'translate(-50%, -50%)'
           }}
         >
-          <div className="absolute -inset-1 bg-current opacity-20 rounded-full animate-ping" />
-          
+          <div className="absolute -inset-1 bg-current opacity-20 rounded-full animate-ping"/>
+
           {/* Label for each dot */}
-          <div 
+          <div
             className="absolute left-full ml-2 whitespace-nowrap"
             style={{
               color: typeColors[dot.type],
@@ -89,11 +82,11 @@ const RadarView = ({ dots = [] }: RadarViewProps) => {
       ))}
 
       {/* Add grid overlay */}
-      <div className="absolute inset-0 border-t border-green-900/30" style={{ top: '25%' }} />
-      <div className="absolute inset-0 border-t border-green-900/30" style={{ top: '50%' }} />
-      <div className="absolute inset-0 border-l border-green-900/30" style={{ left: '25%' }} />
-      <div className="absolute inset-0 border-l border-green-900/30" style={{ left: '50%' }} />
-      <div className="absolute inset-0 border-l border-green-900/30" style={{ left: '75%' }} />
+      <div className="absolute inset-0 border-t border-green-900/60" style={{top: '25%'}}/>
+      <div className="absolute inset-0 border-t border-green-900/60" style={{top: '50%'}}/>
+      <div className="absolute inset-0 border-l border-green-900/60" style={{left: '25%'}}/>
+      <div className="absolute inset-0 border-l border-green-900/60" style={{left: '50%'}}/>
+      <div className="absolute inset-0 border-l border-green-900/60" style={{left: '75%'}}/>
     </div>
   );
 };

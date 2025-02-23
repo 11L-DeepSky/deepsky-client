@@ -1,17 +1,10 @@
-
-import React, { useRef, useState } from 'react';
+import React, {useRef, useState} from 'react';
 import DashboardSection from '@/components/DashboardSection';
 import VideoFeed from '@/components/VideoFeed';
 import RadarView from '@/components/RadarView';
 import MessageFeed from '@/components/MessageFeed';
 import LiveFeed from '@/components/LiveFeed';
-
-interface RadarDot {
-  x: number;
-  y: number;
-  size: number;
-  type: 'BIRD' | 'SMALL_PLANE' | 'BIG_PLANE';
-}
+import {RadarDot} from "@/types.ts";
 
 const Index = () => {
   const [radarDots, setRadarDots] = useState<RadarDot[]>([]);
@@ -25,24 +18,24 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-dashboard-bg text-white p-4">
-      <div className="grid grid-cols-2 gap-4 max-w-[1800px] mx-auto" style={{ height: "calc(100vh - 2rem)" }}>
+      <div className="grid grid-cols-2 gap-4 max-w-[1800px] mx-auto" style={{height: "calc(100vh - 2rem)"}}>
         <DashboardSection title="Last Analyzed Frame" className="h-[calc(50vh-2rem)]">
-          <VideoFeed onNewFrame={handleNewFrame} />
+          <VideoFeed onNewFrame={handleNewFrame}/>
         </DashboardSection>
-        
+
         <DashboardSection title="Message Feed" className="h-[calc(50vh-2rem)]">
-          <MessageFeed 
+          <MessageFeed
             ref={messageFeedRef}
-            onRadarUpdate={setRadarDots} 
+            onRadarUpdate={setRadarDots}
           />
         </DashboardSection>
-        
+
         <DashboardSection title="Radar View" className="h-[calc(50vh-2rem)]">
-          <RadarView dots={radarDots} />
+          <RadarView dots={radarDots}/>
         </DashboardSection>
-        
+
         <DashboardSection title="Live Feed" className="h-[calc(50vh-2rem)]">
-          <LiveFeed />
+          <LiveFeed/>
         </DashboardSection>
       </div>
     </div>
